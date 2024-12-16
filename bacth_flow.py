@@ -92,7 +92,9 @@ def batch_flow(graph):
     
     # 初始化之后输出 s-flow 和 t-flow 的大小
     print(f's-flow is {sum(f[s][v] for v in f[s])}, t-flow is {sum(f[v][t] for v in f[t])}')
-    
+    for i in range(5):
+        print(f's-flow of {V[i]} is {f[s][V[i]]}, t-flow of {V[i]} is {f[V[i]][t]}')
+    # exit()
     # Balance flow at intermediate vertices
     for i in range(n - 2-1, 0, -1):
         # vi = ordering[i]
@@ -128,7 +130,8 @@ def batch_flow(graph):
                 v_k_can_receive_from_v_i = v_k_can_push_to_left_side + v_k_now_push_tot_flow - v_k_now_receive
                 print(f'v_k is {V[k]}, 它最多能 push 出去的 flow 是 {sum(graph[V[k]][v] for v in V[:k])}, {V[k]} 现在接收到的 s-flow 是 {sum(f[u][V[k]] for u in V[k+1:])}, push 出的 t-flow 是 {sum(f[V[k]][u] for u in V[k+1:])}, push 出的总 flow 是 {sum(f[V[k]][u] for u in V)}')
                 print(f'所以 v_k 现在最多只能接收 {v_k_can_receive_from_v_i} 的 flow')
-                push_flow = min(graph[V[i]][V[k]], C_0, v_k_can_receive_from_v_i)
+                # push_flow = min(graph[V[i]][V[k]], C_0, v_k_can_receive_from_v_i)
+                push_flow = min(graph[V[i]][V[k]], C_0)
                 print(f'现在 V[i] 是 {V[i]}, 多余的 flow 是 {C_0}, 现在要把这些 flow 推给 {V[k]}, 实际推出去的 flow 是 {push_flow}, 是否不超过最多能接收的 flow 呢: {push_flow<=v_k_can_receive_from_v_i}')
                 if push_flow == 0:
                     print(f'No push flow! what\'s wrong?, C_0 is {C_0}')
@@ -179,16 +182,7 @@ def batch_flow(graph):
     for u in f:
         for v in f[u]:
             F[u][v] = f[u][v]
-    # Compute total flow from s to t
-    max_flow_value_from_s = sum(F[s][v] for v in F[s])
-    # print([F[s][v] for v in F[s]],[F[v][t] for v in F[t]])
-    # print([v for v in F[t]],ori_graph[t])
-    # for u in ori_graph[t]:
-    #     print(f'{F[u][t]}/{ori_graph[u][t]}')
-    print(len(F[t]),len(ori_graph[t]))
-    max_flow_value_to_t = sum(F[v][t] for v in F[t])
-
-    print(f"Maximum flow value using BatchFlow: {max_flow_value_from_s},max_flow_value_to_t is {max_flow_value_to_t,F[s][t]}")
+    
     
     return F
 
@@ -246,7 +240,7 @@ def visualize_flow(graph, flow):
 
 import random
 
-def generate_random_graph(num_nodes, max_weight=1000):
+def generate_random_graph(num_nodes, max_weight=50):
     graph = {f'u{i}': {} for i in range(num_nodes)}  # Create nodes 'v0' to 'v9'
     
     # Add random edges with random weights
@@ -265,14 +259,14 @@ def generate_random_graph(num_nodes, max_weight=1000):
     return graph
 
 # Generate a random graph with 10 nodes
-# graph = generate_random_graph(20)
-# # 将生成的图写入 data.txt 中, 不覆盖原有的数据, 而是追加
+graph = generate_random_graph(500)
+# 将生成的图写入 data.txt 中, 不覆盖原有的数据, 而是追加
 # with open('data.txt', 'a') as f:
 #     f.write(str(graph)+'\n')
 
 # 从文件 inbalanced_example.txt 中读取图数据
-with open('inbalanced_example.txt', 'r') as f:
-    graph = eval(f.read())
+# with open('inbalanced_example_100.txt', 'r') as f:
+#     graph = eval(f.read())
 
 
 
@@ -295,7 +289,7 @@ with open('inbalanced_example.txt', 'r') as f:
 # 'u4': 492, 'u5': 842, 'u6': 219, 'u7': 0}}
 
 ori_g = copy.deepcopy(graph)
-print(graph)
+# print(graph)
 # graph['u0']['u1']=999
 # graph={'u0': {'u0': 0, 'u1': 9, 'u2': 8, 'u3': 5, 'u4': 0, 'u5': 7, 'u6': 2, 'u7': 10, 'u8': 10, 'u9': 3}, 'u1': {'u0': 2, 'u1': 0, 'u2': 0, 'u3': 0, 'u4': 3, 'u5': 10, 'u6': 4, 'u7': 0, 'u8': 7, 'u9': 0}, 'u2': {'u0': 6, 'u1': 0, 'u2': 0, 'u3': 0, 'u4': 2, 'u5': 8, 'u6': 3, 'u7': 3, 'u8': 5, 
 # 'u9': 0}, 'u3': {'u0': 9, 'u1': 2, 'u2': 7, 'u3': 0, 'u4': 0, 'u5': 3, 'u6': 0, 'u7': 6, 'u8': 7, 'u9': 2}, 'u4': {'u0': 0, 'u1': 3, 'u2': 0, 'u3': 0, 'u4': 0, 'u5': 0, 'u6': 10, 'u7': 6, 'u8': 10, 'u9': 3}, 'u5': {'u0': 2, 'u1': 0, 'u2': 8, 'u3': 5, 'u4': 1, 'u5': 0, 'u6': 0, 'u7': 6, 'u8': 0, 'u9': 4}, 'u6': {'u0': 8, 'u1': 0, 'u2': 0, 'u3': 2, 'u4': 5, 'u5': 9, 'u6': 0, 'u7': 0, 'u8': 0, 'u9': 0}, 'u7': {'u0': 7, 'u1': 10, 'u2': 6, 'u3': 9, 'u4': 9, 'u5': 1, 'u6': 9, 'u7': 0, 'u8': 7, 'u9': 10}, 'u8': {'u0': 0, 'u1': 2, 'u2': 0, 'u3': 5, 'u4': 0, 'u5': 6, 'u6': 0, 'u7': 5, 'u8': 0, 'u9': 9}, 'u9': {'u0': 1, 'u1': 7, 'u2': 5, 'u3': 5, 'u4': 7, 'u5': 9, 'u6': 1, 
@@ -325,7 +319,7 @@ G = nx.DiGraph()
 for u in graph:
     for v, capacity in graph[u].items():
         G.add_edge(u, v, capacity=capacity)
-print(G)
+# print(G)
 flow_value, flow_dict = nx.maximum_flow(G, s, t)
 print(f"Maximum flow value using networkx: {flow_value}")
 max_flow_value_to_t = sum(flow_dict[v][t] for v in flow_dict[t])
@@ -337,12 +331,21 @@ print(max_flow_value_to_t)
 
 # Compute flow using BatchFlow
 flow = batch_flow(graph)
-for u in flow:
-    for v in flow[u]:
-        print(f"Flow from {u} to {v}: {flow[u][v]}/{ori_g[u][v]}")
+# for u in flow:
+#     for v in flow[u]:
+#         print(f"Flow from {u} to {v}: {flow[u][v]}/{ori_g[u][v]}")
 print(f'is_legal_flow is {is_legal_flow(ori_g, flow, s, t, ordering)}')
+# Compute total flow from s to t
+max_flow_value_from_s = sum(flow[s][v] for v in flow[s])
+# print([F[s][v] for v in F[s]],[F[v][t] for v in F[t]])
+# print([v for v in F[t]],ori_graph[t])
+# for u in ori_graph[t]:
+#     print(f'{F[u][t]}/{ori_graph[u][t]}')
+# print(len(F[t]),len(ori_graph[t]))
+max_flow_value_to_t = sum(flow[v][t] for v in flow[t])
 
-
+print(f"Maximum flow value using BatchFlow: {max_flow_value_from_s},max_flow_value_to_t is {max_flow_value_to_t,flow[s][t]}")
+print(ordering[:10])
 
 # s, t = 'a', 'd'  # Example source and sink
 
@@ -354,12 +357,12 @@ print("Visualizing BatchFlow result:")
 # print("Visualizing networkx flow result:")
 # visualize_flow(graph, flow_dict)
 
-leftest = ordering [:4]
-for i in range(4):
-    for j in range(i+1,4):
-        v = leftest[i]
-        u = leftest[j]
-        print(f'{v}->{u}:{ori_g[v][u]}, flow {v}->{u} is {flow[v][u]}, flow {u}->{v} is {flow[u][v]}')
+# leftest = ordering [:4]
+# for i in range(4):
+#     for j in range(i+1,4):
+#         v = leftest[i]
+#         u = leftest[j]
+#         print(f'{v}->{u}:{ori_g[v][u]}, flow {v}->{u} is {flow[v][u]}, flow {u}->{v} is {flow[u][v]}')
 
         # print(f'{leftest[i]}->{leftest[j]}:{ori_g[leftest[i]][leftest[j]]}, flow {leftest[i]}->{leftest[j]} is {flow[leftest[i]][leftest[j]}, flow {leftest[j]}->{leftest[i]} is {flow[leftest[j]][leftest[i]]}') 
 # for v in leftest:
