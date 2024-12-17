@@ -39,7 +39,7 @@ def batch_flow(graph):
         A flow function F: a dictionary where F[u][v] is the flow from u to v.
     """
     V = ma_search(graph)
-    print(f'ordering is {V}')
+    # print(f'ordering is {V}')
     n = len(V)
     s, t = V[-2], V[-1]
     
@@ -75,28 +75,27 @@ def batch_flow(graph):
     # 初始化之后输出 s-flow 和 t-flow 的大小
     print(f's-flow is {sum(f[s][v] for v in f[s])}, t-flow is {sum(f[v][t] for v in f[t])}')
 
+    tmp_C_0 = []
     # Balance flow at intermediate vertices
     for i in range(n - 2-1, 0, -1):
         C_s = sum(f[vl][V[i]] for vl in V[i + 1:])
         C_t = sum(f[V[i]][vl] for vl in V[i + 1:])
         C_0 = abs(C_s - C_t)
-        print(f'V[i] is {V[i]}, C_s is {C_s}, C_t is {C_t}, C_0 is {C_0}')
+        # print(f'i is {i}, V[i] is {V[i]}, C_s is {C_s}, C_t is {C_t}, C_0 is {C_0}')
+        tmp_C_0.append([C_0,sum(graph[V[i]][v] for v in V[:i])])
         if C_s >= C_t:
             vis1 = [0]*len(V)
             while C_0 > 0:
                 k = -1
                 for kp in range(i-1, -1, -1):
-                    print(f'i, kp, graph[{V[i]}][{V[kp]}] is {i, kp, graph[V[i]][V[kp]]}')
                     if graph[V[i]][V[kp]]>0 and graph[V[kp]][V[i]]>0 and vis1[kp]==0:
                         k = kp
-                        print(f'get k is {k}!')
                         vis1[k] = 1
                         break
                 if k==-1:
                     print(f'No k is found! No vertices can be pushed from {V[i]}! remains flow is {C_0}!')
                     break
                 push_flow = min(graph[V[i]][V[k]], C_0)
-                print(f'现在 V[i] 是 {V[i]}, 多余的 flow 是 {C_0}, 现在要把这些 flow 推给 {V[k]}, 实际推出去的 flow 是 {push_flow}, 是否不超过最多能接收的 flow 呢: {push_flow<=v_k_can_receive_from_v_i}')
                 if push_flow == 0:
                     print(f'No push flow! C_0 is {C_0}')
                     break
@@ -128,6 +127,13 @@ def batch_flow(graph):
             if C_0!=0:
                 print(f'abnormal termination in C_s < C_t!, flow is not balanced! C_0 is {C_0}')
 
+    print(f'all |C_s-C_t| is {tmp_C_0}')
+    N = len(tmp_C_0)
+    for i in range(N):
+        for j in range(i):
+            if tmp_C_0[j][0] >= tmp_C_0[i][0] + sum(graph[V[l]][V[j]] for l in range(i+1)):
+                print(f'true for {i}')
+                break
     # Construct the flow function
     F = defaultdict(lambda: defaultdict(float))
     for u in f:
@@ -162,10 +168,8 @@ def is_legal_flow(graph, flow, s, t, ordering):
             continue
         inflow = sum(flow[v][u] for v in flow if u in flow[v])
         outflow = sum(flow[u][v] for v in flow[u])
-        print(u, inflow,outflow)
         if inflow != outflow:
             illegal_vertices.append((u,inflow,outflow))
-            # return False
 
     return illegal_vertices
 
@@ -190,7 +194,7 @@ def visualize_flow(graph, flow):
 
 import random
 
-def generate_random_graph(num_nodes, max_weight=50):
+def generate_random_graph(num_nodes, max_weight=10):
     graph = {f'u{i}': {} for i in range(num_nodes)}  # Create nodes 'v0' to 'v9'
     
     # Add random edges with random weights
@@ -208,7 +212,7 @@ def generate_random_graph(num_nodes, max_weight=50):
     return graph
 
 # Generate a random graph with 10 nodes
-graph = generate_random_graph(500)
+graph = generate_random_graph(50)
 # 将生成的图写入 data.txt 中, 不覆盖原有的数据, 而是追加
 # with open('data.txt', 'a') as f:
 #     f.write(str(graph)+'\n')
@@ -234,7 +238,11 @@ print(f"Maximum flow value using networkx: {flow_value}")
 #         print(f"Flow from {u} to {v}: {flow_dict[u][v]}")
 
 # Compute flow using BatchFlow
+import time
+start = time.time()
 flow = batch_flow(graph)
+end = time.time()
+print(f"Time taken by BatchFlow: {end - start} seconds")
 # for u in flow:
 #     for v in flow[u]:
 #         print(f"Flow from {u} to {v}: {flow[u][v]}/{ori_g[u][v]}")
